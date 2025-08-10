@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- QR Code Library for dynamically generating the QR code -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- HTML to Canvas Library for downloading the card as an image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -64,7 +62,6 @@
         .screen {
             display: none;
             width: 100%;
-            /* FIX: Removed min-height: 100% which was causing a height calculation conflict on mobile */
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
@@ -265,35 +262,18 @@
             backdrop-filter: blur(5px);
         }
         .card-footer {
-            margin-top: 0.5rem;
-            /* FIX: Center the inline-block/inline-flex elements within it */
+            margin-top: 1.5rem; /* Added margin to push it down slightly */
             text-align: center;
-        }
-        #qrCodeCanvas {
-            margin-top: 1.5rem;
-            border: 2px solid #64ffda;
-            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
-            border-radius: 0.5rem;
-            background-color: #fff;
-            /* FIX: Use inline-flex to make the container shrink around the QR code */
-            display: inline-flex;
-            /* FIX: Add padding for spacing between the QR code and the border */
-            padding: 4px;
-        }
-        #qrCodeCanvas img {
-            border-radius: 0.25rem;
         }
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 768px) {
             body {
-                /* Ensure container is near the top on mobile */
                 align-items: flex-start;
             }
             .app-container {
                 padding: 1.5rem;
                 border-radius: 1.5rem;
-                /* Allow container to take up more vertical space on mobile */
                 height: auto;
                 max-height: none;
             }
@@ -327,35 +307,34 @@
                 margin-bottom: 1rem;
             }
             
-            /* --- FIX: Added specific scaling for the results card on mobile --- */
             #printableArea {
-                padding: 1.5rem 1rem; /* Reduce padding */
-                min-height: unset; /* Remove fixed min-height to allow shrinking */
+                padding: 1.5rem 1rem;
+                min-height: unset;
             }
 
             #printableArea .info101-brand {
-                font-size: 1.2em; /* Reduce brand font size */
+                font-size: 1.2em;
                 margin-bottom: 0.75rem;
             }
 
             #digitalAvatar {
-                width: 96px; /* Reduce avatar size */
+                width: 96px;
                 height: 96px;
                 margin-top: 0.25rem;
                 margin-bottom: 1rem;
             }
 
             #printableArea .section-title {
-                font-size: 1em; /* Reduce section title font size */
+                font-size: 1em;
             }
 
             #printableArea .section-content {
-                font-size: 0.8em; /* Reduce section content font size */
+                font-size: 0.8em;
             }
 
             .card-section {
-                padding: 0.75rem; /* Reduce padding inside the card sections */
-                width: 100%; /* Make card sections take full width of printableArea */
+                padding: 0.75rem;
+                width: 100%;
             }
         }
     </style>
@@ -366,7 +345,6 @@
     <div id="app" class="app-container">
         <!-- Welcome Screen -->
         <div id="welcomeScreen" class="screen active">
-            <!-- New SVG Icon -->
             <svg class="mb-8" width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="15" y="15" width="70" height="70" fill="#121921" stroke="#64ffda" stroke-width="3"/>
                 <path d="M30 35H70V65H30V35Z" fill="#121921" stroke="#64ffda" stroke-width="3"/>
@@ -428,10 +406,9 @@
                         <p id="futureDigitalTip" class="section-content"></p>
                     </div>
                     <div class="card-footer">
-                        <div id="qrCodeCanvas"></div>
+                        <!-- QR Code Element Removed -->
                     </div>
                 </div>
-                <!-- FIX: Added mb-8 (margin-bottom: 2rem) to create space at the bottom -->
                 <div class="flex flex-col gap-4 mt-8 mb-8">
                     <button id="downloadButton" class="button-primary">
                         Download Your Card
@@ -467,8 +444,6 @@
         const printableArea = document.getElementById('printableArea');
         const digitalAvatarElement = document.getElementById('digitalAvatar');
         const moreInfoButton = document.getElementById('moreInfoButton');
-        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
-        let qrcode = null; // Variable to hold the QRCode object
 
         let currentQuestionIndex = 0;
         let userAnswers = {}; // Stores { questionId: selectedValue }
@@ -536,8 +511,6 @@
 
         // --- Screen Management Functions ---
         function showScreen(screenToShow) {
-            // FIX: We only want to scroll the app container, not the entire window.
-            // The explicit scroll is now handled in loadQuestion with a delay.
             const screens = [welcomeScreen, questionScreen, processingScreen, resultsScreen];
             screens.forEach(screen => {
                 if (screen === screenToShow) {
@@ -558,7 +531,6 @@
                 nextButton.disabled = true; // Disable next button until an option is selected
                 nextButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-                // Check if a back button should be enabled
                 if (currentQuestionIndex > 0) {
                     backButton.disabled = false;
                     backButton.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -575,7 +547,6 @@
                     button.addEventListener('click', () => selectOption(button, question.id, option.value));
                     optionsContainer.appendChild(button);
 
-                    // Check if this is the previously selected option and mark it
                     if (userAnswers[question.id] === option.value) {
                         button.classList.add('selected');
                         selectedOptionElement = button;
@@ -584,29 +555,24 @@
                     }
                 });
                 showScreen(questionScreen);
-
-                // FIX: Add a small delay to the scroll command to ensure it runs
-                // after the browser's default scroll-on-click behavior has completed.
+                
                 setTimeout(() => {
                     appContainer.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 50);
             } else {
-                // All questions answered, proceed to processing
                 processAnswers();
             }
         }
 
         function selectOption(button, questionId, value) {
-            // Remove 'selected' class from previously selected button
             if (selectedOptionElement) {
                 selectedOptionElement.classList.remove('selected');
             }
-            // Add 'selected' class to the new button
             button.classList.add('selected');
-            selectedOptionElement = button; // Update selected option reference
+            selectedOptionElement = button;
 
-            userAnswers[questionId] = value; // Store the answer
-            nextButton.disabled = false; // Enable next button
+            userAnswers[questionId] = value;
+            nextButton.disabled = false;
             nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
@@ -677,7 +643,7 @@ Example:
 
             let snapshotText = "Could not generate snapshot.";
             let tipText = "Could not generate tip.";
-            let imagePrompt = ""; // Will be constructed based on text results
+            let imagePrompt = "";
 
             try {
                 const textResponse = await fetch(textApiUrl, {
@@ -686,13 +652,13 @@ Example:
                     body: JSON.stringify(textPayload)
                 });
 
-                if (!textResponse.ok) { // Check if response was successful
-                    const errorDetails = await textResponse.json(); // Assuming proxy returns JSON error
+                if (!textResponse.ok) {
+                    const errorDetails = await textResponse.json();
                     console.error(`Text API Error: ${textResponse.status} - ${errorDetails.error || 'Unknown Error'}`, errorDetails.details);
                     digitalSnapshotElement.textContent = `Error: ${errorDetails.error || 'Text generation failed.'}`;
                     futureDigitalTipElement.textContent = `Details: ${errorDetails.details || 'Check proxy server console.'}`;
-                    showScreen(resultsScreen); // Show results even with an error
-                    return; // Stop further processing if text generation fails
+                    showScreen(resultsScreen);
+                    return;
                 }
 
                 const textResult = await textResponse.json();
@@ -718,15 +684,13 @@ Example:
             digitalSnapshotElement.textContent = snapshotText;
             futureDigitalTipElement.textContent = tipText;
 
-            // --- Step 2: Generate Image Avatar with new, more varied prompts ---
+            // --- Step 2: Generate Image Avatar ---
             document.querySelector('#processingScreen p:first-of-type').textContent = "SIMbot is creating your unique digital avatar...";
             document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
 
-            // Set a placeholder image while generating
             digitalAvatarElement.src = "https://placehold.co/128x128/aabbcc/ffffff?text=Loading...";
 
-            // New logic to add variety and a chance for a hand-drawn avatar
-            const isHandDrawn = Math.random() < 0.2; // 20% chance for a hand-drawn avatar
+            const isHandDrawn = Math.random() < 0.2;
             
             if (isHandDrawn) {
                 imagePrompt = `A friendly, whimsical robot head avatar. Style is a simple, black ink line drawing on a white background, like a hand-drawn sketch from a notebook.`;
@@ -739,7 +703,6 @@ Example:
                 const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
                 const randomStyle = styles[Math.floor(Math.random() * styles.length)];
 
-                // Construct a more descriptive and varied prompt
                 imagePrompt = `A single, unique robot head avatar in a cartoon style. The robot is ${randomEmotion} and looks homemade, constructed from simple, everyday objects like ${randomMaterial}. The style is ${randomStyle} with a vibrant, colorful palette. The background is simple and clean.`;
             }
 
@@ -752,7 +715,7 @@ Example:
                         body: JSON.stringify(imagePayload)
                     });
 
-                    if (!imageResponse.ok) { // Check if response was successful
+                    if (!imageResponse.ok) {
                         console.error(`Image API Error: ${imageResponse.status}`);
                         digitalAvatarElement.src = "https://placehold.co/128x128/ff0000/ffffff?text=API+Error";
                     } else {
@@ -774,19 +737,6 @@ Example:
                 digitalAvatarElement.src = "https://placehold.co/128x128/cccccc/333333?text=No+Avatar";
             }
             
-            // --- QR Code Generation ---
-            const moreInfoLink = 'https://nuku.wgtn.ac.nz/courses/17023/pages/home';
-            qrCodeCanvas.innerHTML = '';
-            
-            qrcode = new QRCode(qrCodeCanvas, {
-                text: moreInfoLink,
-                width: 60,
-                height: 60,
-                colorDark: "#333",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
             // --- Final Step: Display Results ---
             showScreen(resultsScreen);
         }
