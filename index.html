@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Digital Footprint & Future</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- QR Code Library for dynamically generating the QR code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- HTML to Canvas Library for downloading the card as an image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* --- General Body and Layout Fixes --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: auto;
+            padding: 2rem 1rem;
+        }
+        .app-container {
+            background-color: rgba(18, 25, 33, 0.9);
+            border-radius: 2rem;
+            box-shadow: 0 0 30px rgba(100, 255, 218, 0.2);
+            max-width: 800px;
+            width: 100%;
+            height: 90vh;
+            max-height: 700px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow-y: auto;
+            transform: scale(1);
+            transition: all 0.3s ease-in-out;
+        }
+        /* Custom scrollbar for a more thematic feel */
+        .app-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .app-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        .app-container::-webkit-scrollbar-thumb {
+            background-color: #64ffda;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        .app-container:hover {
+            box-shadow: 0 0 40px rgba(100, 255, 218, 0.4);
+        }
+        .screen {
+            display: none;
+            width: 100%;
+            /* FIX: Removed min-height: 100% which was causing a height calculation conflict on mobile */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .screen.active {
+            display: flex;
+        }
+        /* Welcome screen needs to be centered */
+        #welcomeScreen, #processingScreen {
+            justify-content: center;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Component Styles (Unchanged) --- */
+        .button-primary {
+            background: #000;
+            color: #64ffda;
+            padding: 1rem 2.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1.25rem;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            transition: all 0.3s ease;
+            border: 2px solid #64ffda;
+            cursor: pointer;
+            margin-top: 2rem;
+        }
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.8);
+            background: rgba(100, 255, 218, 0.1);
+        }
+        .button-option {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 1.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: 0 0 5px rgba(100, 255, 218, 0.2);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(100, 255, 218, 0.5);
+            cursor: pointer;
+            margin: 0.5rem;
+            min-width: 200px;
+            text-align: center;
+        }
+        .button-option:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.8);
+        }
+        .button-option.selected {
+            background: rgba(100, 255, 218, 0.15);
+            color: #64ffda;
+            border-color: #64ffda;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.8);
+        }
+        .question-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e0e7ff;
+            margin-bottom: 2.5rem;
+            line-height: 1.3;
+        }
+        .loading-spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #64ffda;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results-section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #e0e7ff;
+            margin-bottom: 1.5rem;
+        }
+        .results-section p {
+            font-size: 1.25rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .results-section #digitalSnapshot,
+        .results-section #futureDigitalTip {
+            font-weight: 600;
+            color: #64ffda;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(100, 255, 218, 0.5);
+            transition: all 0.5s ease-in-out;
+        }
+
+        /* --- Card Design Styles (Unchanged) --- */
+        #printableArea {
+            width: 100%;
+            max-width: 450px;
+            background-color: #0d1117;
+            border-radius: 2rem;
+            padding: 2.5rem 1.5rem;
+            box-shadow: 0 0 20px rgba(100, 255, 218, 0.2), inset 0 0 10px rgba(100, 255, 218, 0.1);
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        #printableArea::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(0deg, transparent 24%, rgba(100, 255, 218, 0.05) 25%, rgba(100, 255, 218, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 255, 218, 0.05) 75%, rgba(100, 255, 218, 0.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(100, 255, 218, 0.05) 25%, rgba(100, 255, 218, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 255, 218, 0.05) 75%, rgba(100, 255, 218, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            animation: scanline 10s linear infinite;
+            z-index: -1;
+        }
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 500px; }
+        }
+        #printableArea .info101-brand {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.8em;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            color: #64ffda;
+            text-shadow: 0 0 5px #64ffda;
+            animation: neon-flicker 1.5s infinite alternate;
+            display: inline-block;
+        }
+        @keyframes neon-flicker {
+            0% { opacity: 1; text-shadow: 0 0 5px #64ffda; }
+            50% { opacity: 0.8; text-shadow: 0 0 10px #64ffda; }
+            100% { opacity: 1; text-shadow: 0 0 5px #64ffda; }
+        }
+        #digitalAvatar {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: none;
+            box-shadow: 0 0 15px rgba(100, 255, 218, 0.8);
+            margin: 0.5rem auto 1.5rem auto;
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        #digitalAvatar:hover {
+            box-shadow: 0 0 25px rgba(100, 255, 218, 1);
+        }
+        #printableArea .section-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #64ffda;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 3px #64ffda;
+        }
+        #printableArea .section-content {
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #e0e7ff;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-weight: 500;
+            padding: 0.5rem;
+        }
+        .card-section {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid #64ffda;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            width: 90%;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.4), inset 0 0 5px rgba(100, 255, 218, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        .card-footer {
+            margin-top: 0.5rem;
+            /* FIX: Center the inline-block/inline-flex elements within it */
+            text-align: center;
+        }
+        #qrCodeCanvas {
+            margin-top: 1.5rem;
+            border: 2px solid #64ffda;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.5);
+            border-radius: 0.5rem;
+            background-color: #fff;
+            /* FIX: Use inline-flex to make the container shrink around the QR code */
+            display: inline-flex;
+            /* FIX: Add padding for spacing between the QR code and the border */
+            padding: 4px;
+        }
+        #qrCodeCanvas img {
+            border-radius: 0.25rem;
+        }
+
+        /* --- Responsive Adjustments --- */
+        @media (max-width: 768px) {
+            body {
+                /* Ensure container is near the top on mobile */
+                align-items: flex-start;
+            }
+            .app-container {
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+                /* Allow container to take up more vertical space on mobile */
+                height: auto;
+                max-height: none;
+            }
+            .question-text {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .button-option {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                margin: 0.3rem;
+                min-width: unset;
+                width: 100%;
+            }
+            .button-primary {
+                padding: 0.8rem 2rem;
+                font-size: 1rem;
+                margin-top: 1.5rem;
+            }
+            .results-section h2 {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+            }
+            .results-section p {
+                font-size: 1rem;
+                margin-bottom: 0.8rem;
+            }
+            .results-section #digitalSnapshot,
+            .results-section #futureDigitalTip {
+                padding: 0.8rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            /* --- FIX: Added specific scaling for the results card on mobile --- */
+            #printableArea {
+                padding: 1.5rem 1rem; /* Reduce padding */
+                min-height: unset; /* Remove fixed min-height to allow shrinking */
+            }
+
+            #printableArea .info101-brand {
+                font-size: 1.2em; /* Reduce brand font size */
+                margin-bottom: 0.75rem;
+            }
+
+            #digitalAvatar {
+                width: 96px; /* Reduce avatar size */
+                height: 96px;
+                margin-top: 0.25rem;
+                margin-bottom: 1rem;
+            }
+
+            #printableArea .section-title {
+                font-size: 1em; /* Reduce section title font size */
+            }
+
+            #printableArea .section-content {
+                font-size: 0.8em; /* Reduce section content font size */
+            }
+
+            .card-section {
+                padding: 0.75rem; /* Reduce padding inside the card sections */
+                width: 100%; /* Make card sections take full width of printableArea */
+            }
+        }
+    </style>
+    <!-- We're adding a new cyberpunk-style font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="screen active">
+            <!-- New SVG Icon -->
+            <svg class="mb-8" width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="15" y="15" width="70" height="70" fill="#121921" stroke="#64ffda" stroke-width="3"/>
+                <path d="M30 35H70V65H30V35Z" fill="#121921" stroke="#64ffda" stroke-width="3"/>
+                <path d="M45 45L45 55L55 55L55 45L45 45Z" fill="#64ffda" stroke="#64ffda" stroke-width="2">
+                    <animate attributeName="fill" values="#64ffda; #121921; #64ffda" dur="2s" repeatCount="indefinite"/>
+                </path>
+                <path d="M25 40L25 60" stroke="#64ffda" stroke-width="2" stroke-linecap="round"/>
+                <path d="M75 40L75 60" stroke="#64ffda" stroke-width="2" stroke-linecap="round"/>
+                <path d="M40 85L60 85" stroke="#64ffda" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h1 class="text-5xl font-extrabold text-white mb-4 leading-tight" style="text-shadow: 0 0 10px rgba(100, 255, 218, 0.8);">
+                Shape Your Digital Future!
+            </h1>
+            <button id="startButton" class="button-primary">
+                Click Here To Start Your Journey with SIMbot
+            </button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="questionScreen" class="screen">
+            <p id="questionText" class="question-text"></p>
+            <div id="optionsContainer" class="flex flex-wrap justify-center gap-4 mt-6">
+                <!-- Options will be injected here by JavaScript -->
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                <button id="backButton" class="button-primary opacity-50 cursor-not-allowed" disabled>
+                    Back
+                </button>
+                <button id="nextButton" class="button-primary opacity-50 cursor-not-allowed" disabled>
+                    Next
+                </button>
+            </div>
+        </div>
+
+        <!-- Processing Screen -->
+        <div id="processingScreen" class="screen">
+            <div class="loading-spinner"></div>
+            <p class="text-2xl font-semibold text-gray-200">SIMbot is crafting your personalised insights...</p>
+            <p class="text-lg text-gray-400 mt-2">Analysing your digital DNA with ✨AI✨.</p>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="screen results-section">
+            <div class="w-full flex flex-col items-center">
+                <div id="printableArea"> <!-- Container for the digital card content -->
+                    <div class="card-header">
+                        <h1 class="info101-brand">
+                            BE THE ARCHITECT OF<br/>
+                            YOUR DIGITAL LIFE
+                        </h1>
+                    </div>
+                    <img id="digitalAvatar" src="https://placehold.co/96x96/aabbcc/ffffff?text=Avatar" alt="Your Digital Avatar">
+                    <div class="card-section">
+                        <h2 class="section-title">Your Digital Snapshot!</h2>
+                        <p id="digitalSnapshot" class="section-content"></p>
+                    </div>
+                    <div class="card-section">
+                        <h2 class="section-title">Your Future Digital Tip!</h2>
+                        <p id="futureDigitalTip" class="section-content"></p>
+                    </div>
+                    <div class="card-footer">
+                        <div id="qrCodeCanvas"></div>
+                    </div>
+                </div>
+                <!-- FIX: Added mb-8 (margin-bottom: 2rem) to create space at the bottom -->
+                <div class="flex flex-col gap-4 mt-8 mb-8">
+                    <button id="downloadButton" class="button-primary">
+                        Download Your Card
+                    </button>
+                    <button id="moreInfoButton" class="button-primary">
+                        Find Out More!
+                    </button>
+                    <button id="goHomeButton" class="button-primary">
+                        Go back to start
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const questionScreen = document.getElementById('questionScreen');
+        const processingScreen = document.getElementById('processingScreen');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const appContainer = document.getElementById('app');
+
+        const startButton = document.getElementById('startButton');
+        const questionTextElement = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const nextButton = document.getElementById('nextButton');
+        const backButton = document.getElementById('backButton');
+        const digitalSnapshotElement = document.getElementById('digitalSnapshot');
+        const futureDigitalTipElement = document.getElementById('futureDigitalTip');
+        const downloadButton = document.getElementById('downloadButton');
+        const goHomeButton = document.getElementById('goHomeButton');
+        const printableArea = document.getElementById('printableArea');
+        const digitalAvatarElement = document.getElementById('digitalAvatar');
+        const moreInfoButton = document.getElementById('moreInfoButton');
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        let qrcode = null; // Variable to hold the QRCode object
+
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // Stores { questionId: selectedValue }
+        let selectedOptionElement = null; // To keep track of the currently selected option button
+
+        // Define your questions and options
+        const questions = [
+            {
+                id: 'q1',
+                questionText: "When you first pick up your phone, what's usually the very first app you open?",
+                options: [
+                    { text: "Social Media (e.g., Instagram, TikTok)", value: 'social_media' },
+                    { text: "Streaming (e.g., YouTube, Netflix)", value: 'streaming' },
+                    { text: "Messaging (e.g., WhatsApp, Snapchat)", value: 'messaging' },
+                    { text: "News/Information App", value: 'news_info' },
+                    { text: "Gaming", value: 'gaming' }
+                ],
+                info101Themes: ['Module 1: What are the building blocks of my Digital Life?', 'Module 2: What is the technology that underpins my Digital Life?']
+            },
+            {
+                id: 'q2',
+                questionText: "You see a fascinating headline online. What's your typical next step before sharing it?",
+                options: [
+                    { text: "Share it immediately, it looks interesting!", value: 'share_immediately' },
+                    { text: "Check if friends have shared it", value: 'check_friends' },
+                    { text: "Look for other sources to confirm it", value: 'confirm_sources' },
+                    { text: "Scroll past, not sure if it's real", value: 'scroll_past' }
+                ],
+                info101Themes: ['Module 3: How do I organise my Digital Life?', 'Credibility']
+            },
+            {
+                id: 'q3',
+                questionText: "When a streaming service recommends a new show, how do you think it figured out you'd like it?",
+                options: [
+                    { text: "Magic! It just knows.", value: 'magic' },
+                    { text: "It knows what I've watched before", value: 'watched_before' },
+                    { text: "My friends like it too", value: 'friends_like' },
+                    { text: "I told it my preferences directly", value: 'preferences_told' }
+                ],
+                info101Themes: ['Module 4: Do my Digital Habits matter?', 'Data Analytics']
+            },
+            {
+                id: 'q4',
+                questionText: "If you post a photo online, how much control do you feel you have over who eventually sees it?",
+                options: [
+                    { text: "Total control, only my friends see it", value: 'total_control' },
+                    { text: "Some control, depends on privacy settings", value: 'some_control' },
+                    { text: "Not much, once it's out there it's public", value: 'not_much_control' },
+                    { text: "I don't really think about it", value: 'dont_think' }
+                ],
+                info101Themes: ['Module 5: What is my Digital Footprint?', 'Security', 'Privacy', 'Identity', 'Reputation']
+            },
+            {
+                id: 'q5',
+                questionText: "You're in an online group chat, and someone posts something that makes you uncomfortable. What's your likely reaction?",
+                options: [
+                    { text: "Ignore it, it's just online", value: 'ignore_online' },
+                    { text: "Leave the chat", value: 'leave_chat' },
+                    { text: "Challenge it or report it", value: 'challenge_report' },
+                    { text: "Talk about it with friends offline", value: 'talk_offline' }
+                ],
+                info101Themes: ['Module 6: What are the consequences of my Digital Behaviour?', 'Ethics', 'Online Communities', 'Misinformation']
+            }
+        ];
+
+        // --- Screen Management Functions ---
+        function showScreen(screenToShow) {
+            // FIX: We only want to scroll the app container, not the entire window.
+            // The explicit scroll is now handled in loadQuestion with a delay.
+            const screens = [welcomeScreen, questionScreen, processingScreen, resultsScreen];
+            screens.forEach(screen => {
+                if (screen === screenToShow) {
+                    screen.classList.add('active');
+                } else {
+                    screen.classList.remove('active');
+                }
+            });
+        }
+
+        // --- Question Display and Navigation ---
+        function loadQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const question = questions[currentQuestionIndex];
+                questionTextElement.textContent = question.questionText;
+                optionsContainer.innerHTML = ''; // Clear previous options
+                selectedOptionElement = null; // Reset selected option
+                nextButton.disabled = true; // Disable next button until an option is selected
+                nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Check if a back button should be enabled
+                if (currentQuestionIndex > 0) {
+                    backButton.disabled = false;
+                    backButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    backButton.disabled = true;
+                    backButton.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
+                question.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option.text;
+                    button.classList.add('button-option');
+                    button.dataset.value = option.value;
+                    button.addEventListener('click', () => selectOption(button, question.id, option.value));
+                    optionsContainer.appendChild(button);
+
+                    // Check if this is the previously selected option and mark it
+                    if (userAnswers[question.id] === option.value) {
+                        button.classList.add('selected');
+                        selectedOptionElement = button;
+                        nextButton.disabled = false;
+                        nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                });
+                showScreen(questionScreen);
+
+                // FIX: Add a small delay to the scroll command to ensure it runs
+                // after the browser's default scroll-on-click behavior has completed.
+                setTimeout(() => {
+                    appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+            } else {
+                // All questions answered, proceed to processing
+                processAnswers();
+            }
+        }
+
+        function selectOption(button, questionId, value) {
+            // Remove 'selected' class from previously selected button
+            if (selectedOptionElement) {
+                selectedOptionElement.classList.remove('selected');
+            }
+            // Add 'selected' class to the new button
+            button.classList.add('selected');
+            selectedOptionElement = button; // Update selected option reference
+
+            userAnswers[questionId] = value; // Store the answer
+            nextButton.disabled = false; // Enable next button
+            nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function goToNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function goToPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // --- Gemini API Integration for Text and Image ---
+        async function processAnswers() {
+            showScreen(processingScreen);
+            const textApiUrl = `https://simbot-api-proxy-584934630915.australia-southeast2.run.app/generate-text`;
+            const imageApiUrl = `https://simbot-api-proxy-584934630915.australia-southeast2.run.app/generate-image`;
+
+            // --- Step 1: Generate Text Snapshot and Tip ---
+            document.querySelector('#processingScreen p:first-of-type').textContent = "SIMbot is crafting your personalised insights...";
+            document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
+
+            let textPrompt = `You are SIMbot, an expert in Information Systems from SIM, specialising in helping young people understand their digital lives. Based on the following answers from a user about their digital habits, provide a concise 'Digital Snapshot' (1-2 sentences) summarising their current digital engagement and awareness, and a single 'Future Digital Tip' (1 sentence) that encourages them to explore a relevant INFO101 topic. Your tone should be helpful, encouraging, and knowledgeable, reflecting SIM's approach. Use New Zealand English spelling, grammar, and phrasing.
+
+User Answers:
+`;
+            questions.forEach(q => {
+                const userAnswer = userAnswers[q.id];
+                const selectedOptionText = q.options.find(opt => opt.value === userAnswer)?.text || 'N/A';
+                textPrompt += `${q.questionText} - User chose: "${selectedOptionText}"\n`;
+            });
+
+            textPrompt += `
+INFO101 Themes to consider (refer to these by their full title in the tip):
+- Module 1: What are the building blocks of my Digital Life?
+- Module 2: What is the technology that underpins my Digital Life?
+- Module 3: How do I organise my Digital Life?
+- Module 4: Do my Digital Habits matter?
+- Module 5: What is my Digital Footprint?
+- Module 6: What are the consequences of my Digital Behaviour?
+- Module 7: How can I be the Architect of my Digital Life?
+
+Format your response as a JSON object with two keys: "snapshot" and "tip".
+Example:
+{
+    "snapshot": "Your digital life is vibrant and connected, showing a keen interest in social interactions.",
+    "tip": "Consider exploring 'Module 5: What is my Digital Footprint?' to better understand and manage your digital footprint!"
+}
+`;
+
+            const textPayload = {
+                contents: [{ role: "user", parts: [{ text: textPrompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "snapshot": { "type": "STRING" },
+                            "tip": { "type": "STRING" }
+                        },
+                        "propertyOrdering": ["snapshot", "tip"]
+                    }
+                }
+            };
+
+            let snapshotText = "Could not generate snapshot.";
+            let tipText = "Could not generate tip.";
+            let imagePrompt = ""; // Will be constructed based on text results
+
+            try {
+                const textResponse = await fetch(textApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(textPayload)
+                });
+
+                if (!textResponse.ok) { // Check if response was successful
+                    const errorDetails = await textResponse.json(); // Assuming proxy returns JSON error
+                    console.error(`Text API Error: ${textResponse.status} - ${errorDetails.error || 'Unknown Error'}`, errorDetails.details);
+                    digitalSnapshotElement.textContent = `Error: ${errorDetails.error || 'Text generation failed.'}`;
+                    futureDigitalTipElement.textContent = `Details: ${errorDetails.details || 'Check proxy server console.'}`;
+                    showScreen(resultsScreen); // Show results even with an error
+                    return; // Stop further processing if text generation fails
+                }
+
+                const textResult = await textResponse.json();
+
+                if (textResult.candidates && textResult.candidates.length > 0 &&
+                    textResult.candidates[0].content && textResult.candidates[0].content.parts &&
+                    textResult.candidates[0].content.parts.length > 0) {
+                    const jsonString = textResult.candidates[0].content.parts[0].text;
+                    const parsedJson = JSON.parse(jsonString);
+                    snapshotText = parsedJson.snapshot;
+                    tipText = parsedJson.tip;
+                } else {
+                    console.error("Unexpected text API response structure:", textResult);
+                    snapshotText = "Oops! SIMbot couldn't generate your digital snapshot right now.";
+                    tipText = "Please try again later. (Text API issue)";
+                }
+            } catch (error) {
+                console.error("Error calling Gemini Text API (via proxy):", error);
+                snapshotText = "Network error or proxy issue for text generation.";
+                tipText = "Please ensure your local proxy server is running.";
+            }
+
+            digitalSnapshotElement.textContent = snapshotText;
+            futureDigitalTipElement.textContent = tipText;
+
+            // --- Step 2: Generate Image Avatar with new, more varied prompts ---
+            document.querySelector('#processingScreen p:first-of-type').textContent = "SIMbot is creating your unique digital avatar...";
+            document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
+
+            // Set a placeholder image while generating
+            digitalAvatarElement.src = "https://placehold.co/128x128/aabbcc/ffffff?text=Loading...";
+
+            // New logic to add variety and a chance for a hand-drawn avatar
+            const isHandDrawn = Math.random() < 0.2; // 20% chance for a hand-drawn avatar
+            
+            if (isHandDrawn) {
+                imagePrompt = `A friendly, whimsical robot head avatar. Style is a simple, black ink line drawing on a white background, like a hand-drawn sketch from a notebook.`;
+            } else {
+                const materials = ['cardboard boxes', 'recycled metal parts', 'old toys', 'vintage electronics', 'junk from a workshop'];
+                const emotions = ['happy', 'curious', 'thoughtful', 'playful'];
+                const styles = ['cyberpunk', 'steampunk', 'retro-futuristic'];
+
+                const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
+                const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+                const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+
+                // Construct a more descriptive and varied prompt
+                imagePrompt = `A single, unique robot head avatar in a cartoon style. The robot is ${randomEmotion} and looks homemade, constructed from simple, everyday objects like ${randomMaterial}. The style is ${randomStyle} with a vibrant, colorful palette. The background is simple and clean.`;
+            }
+
+            if (imagePrompt) {
+                const imagePayload = { instances: { prompt: imagePrompt }, parameters: { "sampleCount": 1} };
+                try {
+                    const imageResponse = await fetch(imageApiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(imagePayload)
+                    });
+
+                    if (!imageResponse.ok) { // Check if response was successful
+                        console.error(`Image API Error: ${imageResponse.status}`);
+                        digitalAvatarElement.src = "https://placehold.co/128x128/ff0000/ffffff?text=API+Error";
+                    } else {
+                        const imageResult = await imageResponse.json();
+                        if (imageResult.predictions && imageResult.predictions.length > 0 && imageResult.predictions[0].bytesBase64Encoded) {
+                            const imageUrl = `data:image/png;base64,${imageResult.predictions[0].bytesBase64Encoded}`;
+                            digitalAvatarElement.src = imageUrl;
+                        } else {
+                            console.error("Unexpected image API response structure:", imageResult);
+                            digitalAvatarElement.src = "https://placehold.co/128x128/cccccc/333333?text=Error";
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error calling Gemini Image API (via proxy):", error);
+                    digitalAvatarElement.src = "https://placehold.co/128x128/cccccc/333333?text=Network+Error";
+                }
+            } else {
+                console.warn("Image prompt was empty, skipping image generation.");
+                digitalAvatarElement.src = "https://placehold.co/128x128/cccccc/333333?text=No+Avatar";
+            }
+            
+            // --- QR Code Generation ---
+            const moreInfoLink = 'https://nuku.wgtn.ac.nz/courses/17023/pages/home';
+            qrCodeCanvas.innerHTML = '';
+            
+            qrcode = new QRCode(qrCodeCanvas, {
+                text: moreInfoLink,
+                width: 60,
+                height: 60,
+                colorDark: "#333",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // --- Final Step: Display Results ---
+            showScreen(resultsScreen);
+        }
+
+        // --- Download Functionality ---
+        function downloadCard() {
+            html2canvas(printableArea, {
+                useCORS: true,
+                scale: 2
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'MyDigitalFootprintCard.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            loadQuestion();
+        });
+
+        nextButton.addEventListener('click', goToNextQuestion);
+        backButton.addEventListener('click', goToPreviousQuestion);
+
+        downloadButton.addEventListener('click', downloadCard);
+
+        goHomeButton.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            userAnswers = {};
+            selectedOptionElement = null;
+            showScreen(welcomeScreen);
+        });
+        
+        moreInfoButton.addEventListener('click', () => {
+            const moreInfoLink = 'https://nuku.wgtn.ac.nz/courses/17023/pages/home';
+            window.open(moreInfoLink, '_blank');
+        });
+
+        // Initial screen load
+        showScreen(welcomeScreen);
+    </script>
+</body>
+</html>
