@@ -556,9 +556,9 @@
                 });
                 showScreen(questionScreen);
                 
-                // Immediately scroll to the top of the container when a new question loads.
-                // This resolves the issue of the view getting stuck at the bottom.
-                appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
             } else {
                 processAnswers();
             }
