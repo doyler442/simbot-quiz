@@ -359,7 +359,7 @@
                 Your Digital Blueprint
             </h1>
             <button id="startButton" class="button-primary">
-                Let SIMbot draw the plans. Click to begin.
+                Let Frankie the SIMbot draw the plans. Click to begin.
             </button>
         </div>
 
@@ -382,7 +382,7 @@
         <!-- Processing Screen -->
         <div id="processingScreen" class="screen">
             <div class="loading-spinner"></div>
-            <p class="text-2xl font-semibold text-gray-200">SIMbot is crafting your personalised insights...</p>
+            <p class="text-2xl font-semibold text-gray-200">Frankie the SIMbot is crafting your personalised insights...</p>
             <p class="text-lg text-gray-400 mt-2">Analysing your digital DNA with ✨AI✨.</p>
         </div>
 
@@ -595,7 +595,7 @@
             const imageApiUrl = `https://simbot-api-proxy-584934630915.australia-southeast2.run.app/generate-image`;
 
             // --- Step 1: Generate Text Snapshot and Tip ---
-            document.querySelector('#processingScreen p:first-of-type').textContent = "SIMbot is crafting your personalised insights...";
+            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is crafting your personalised insights...";
             document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
 
             let textPrompt = `You are SIMbot, an expert in Information Systems from SIM, specialising in helping young people understand their digital lives. Based on the following answers from a user about their digital habits, provide a concise 'Digital Snapshot' (1-2 sentences) summarising their current digital engagement and awareness, and a single 'Future Digital Tip' (1 sentence) that encourages them to explore a relevant INFO101 topic. Your tone should be helpful, encouraging, and knowledgeable, reflecting SIM's approach. Use New Zealand English spelling, grammar, and phrasing.
@@ -672,7 +672,7 @@ Example:
                     tipText = parsedJson.tip;
                 } else {
                     console.error("Unexpected text API response structure:", textResult);
-                    snapshotText = "Oops! SIMbot couldn't generate your digital snapshot right now.";
+                    snapshotText = "Oops! Frankie the SIMbot couldn't generate your digital snapshot right now.";
                     tipText = "Please try again later. (Text API issue)";
                 }
             } catch (error) {
@@ -685,7 +685,7 @@ Example:
             futureDigitalTipElement.textContent = tipText;
 
             // --- Step 2: Generate Image Avatar ---
-            document.querySelector('#processingScreen p:first-of-type').textContent = "SIMbot is creating your unique digital avatar...";
+            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is creating your unique digital avatar...";
             document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
 
             digitalAvatarElement.src = "https://placehold.co/128x128/aabbcc/ffffff?text=Loading...";
