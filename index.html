@@ -675,7 +675,7 @@
 1.  **Analyse User's Answers:** Carefully review the user's choices provided below.
 2.  **Select Most Relevant Theme:** Based on the user's answers, choose the single most relevant question from the "INFO101 Themes" list that would be most helpful for them to explore next.
 3.  **Generate 'Digital Snapshot':** Write a concise and encouraging summary (1-2 sentences) of the user's current digital persona based on their answers.
-4.  **Generate 'Future Digital Tip':** Create a tip that combines two parts. First, it must start *exactly* with the phrase "Frankie thinks you should ask one of the SIM team " followed by the most relevant INFO101 question you selected, enclosed in single quotes. Second, add a full stop right after the closing single quote. Then, add one to two helpful sentences that explain *why* this question is relevant and offer a practical insight.
+4.  **Generate 'Future Digital Tip':** Create a tip that combines two parts. First, it must start *exactly* with the phrase "Frankie thinks you should ask one of the SIM team " followed by the most relevant INFO101 question you selected, enclosed in single quotes. Second, add a full stop right after the closing single quote. Then, add **one concise, helpful sentence** that explains *why* this question is relevant.
 5.  **Tone & Style:** Your tone must be helpful, encouraging, and knowledgeable. Use New Zealand English spelling and phrasing.
 
 **User Answers:**
@@ -696,10 +696,10 @@
 - What are the consequences of my Digital Behaviour?
 - How can I be the Architect of my Digital Life?
 
-**JSON Output Example:**
+**JSON Output Example (Use this as a guide, but select the most relevant theme based on the user's answers):**
 {
-    "snapshot": "It looks like you're thoughtful about what you see online and how you engage with it. That's a great habit for navigating the digital world!",
-    "tip": "Frankie thinks you should ask one of the SIM team 'What is my Digital Footprint?'. Being aware of the trail you leave online is the first step to actively shaping your digital reputation."
+    "snapshot": "A summary of the user's digital persona based on their answers.",
+    "tip": "Frankie thinks you should ask one of the SIM team '[The most relevant INFO101 question you selected]'. [Your concise, helpful sentence explaining why it's relevant]."
 }
 `;
 
