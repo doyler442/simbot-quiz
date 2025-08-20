@@ -265,6 +265,54 @@
             margin-top: 1.5rem; /* Added margin to push it down slightly */
             text-align: center;
         }
+        
+        /* --- UPDATED: Share Button Styles --- */
+        .share-container {
+            background-color: rgba(10, 15, 20, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid #64ffda;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 450px;
+        }
+        .share-container p {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .share-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(100, 255, 218, 0.5);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .share-button:hover {
+            background-color: rgba(100, 255, 218, 0.1);
+            transform: translateY(-2px);
+            color: #64ffda;
+        }
+        .share-button svg {
+            width: 24px;
+            height: 24px;
+        }
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 768px) {
@@ -382,7 +430,7 @@
         <!-- Processing Screen -->
         <div id="processingScreen" class="screen">
             <div class="loading-spinner"></div>
-            <p class="text-2xl font-semibold text-gray-200">Frankie the SIMbot is creating your personalised insights...</p>
+            <p class="text-2xl font-semibold text-gray-200">Frankie the SIMbot is crafting your personalised insights...</p>
             <p class="text-lg text-gray-400 mt-2">Analysing your digital DNA with ✨AI✨.</p>
         </div>
 
@@ -409,9 +457,13 @@
                         <!-- QR Code Element Removed -->
                     </div>
                 </div>
+                <!-- UPDATED: Separated Download and Share buttons -->
                 <div class="flex flex-col gap-4 mt-8 mb-8">
                     <button id="downloadButton" class="button-primary">
                         Download Your Card
+                    </button>
+                    <button id="shareButton" class="button-primary">
+                        Share Your Card
                     </button>
                     <button id="moreInfoButton" class="button-primary">
                         Find Out More!
@@ -420,6 +472,16 @@
                         Go back to start
                     </button>
                 </div>
+
+                <!-- UPDATED: Simplified Share options container -->
+                <div id="shareContainer" class="share-container hidden">
+                    <p>First, <strong>download your card</strong>. Then post it on Insta or TikTok with our hashtags!</p>
+                    <button id="copyHashtagsButton" class="share-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
+                        <span id="copyHashtagsText">Copy Hashtags & Text</span>
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -439,7 +501,15 @@
         const backButton = document.getElementById('backButton');
         const digitalSnapshotElement = document.getElementById('digitalSnapshot');
         const futureDigitalTipElement = document.getElementById('futureDigitalTip');
+        
+        // --- UPDATED Elements ---
         const downloadButton = document.getElementById('downloadButton');
+        const shareButton = document.getElementById('shareButton');
+        const shareContainer = document.getElementById('shareContainer');
+        const copyHashtagsButton = document.getElementById('copyHashtagsButton');
+        const copyHashtagsText = document.getElementById('copyHashtagsText');
+        // --- END UPDATED Elements ---
+
         const goHomeButton = document.getElementById('goHomeButton');
         const printableArea = document.getElementById('printableArea');
         const digitalAvatarElement = document.getElementById('digitalAvatar');
@@ -595,7 +665,7 @@
             const imageApiUrl = `https://simbot-api-proxy-584934630915.australia-southeast2.run.app/generate-image`;
 
             // --- Step 1: Generate Text Snapshot and Tip ---
-            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is creating your personalised insights...";
+            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is crafting your personalised insights...";
             document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
 
             // --- UPDATED PROMPT ---
@@ -748,7 +818,9 @@
             showScreen(resultsScreen);
         }
 
-        // --- Download Functionality ---
+        // --- UPDATED: Share and Download Functionality ---
+        
+        // This function handles downloading the image
         function downloadCard() {
             html2canvas(printableArea, {
                 useCORS: true,
@@ -763,6 +835,30 @@
             });
         }
 
+        // --- UPDATED: Simplified share button logic ---
+        // This function just shows or hides the share instructions.
+        function toggleShareContainer() {
+            shareContainer.classList.toggle('hidden');
+        }
+        
+        // Function to copy hashtags and text to clipboard
+        function copyHashtags() {
+            // --- EDIT THIS LINE TO CHANGE THE TEXT AND HASHTAGS ---
+            const textToCopy = 'I just discovered my digital blueprint from Frankie the SIMbot! #FrankietheSIMbot #SIM #WSBGOpenDay2025';
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            copyHashtagsText.textContent = 'Copied!';
+            setTimeout(() => {
+                copyHashtagsText.textContent = 'Copy Hashtags & Text';
+            }, 2000);
+        }
+
         // --- Event Listeners ---
         startButton.addEventListener('click', () => {
             currentQuestionIndex = 0;
@@ -773,12 +869,16 @@
         nextButton.addEventListener('click', goToNextQuestion);
         backButton.addEventListener('click', goToPreviousQuestion);
 
+        // --- UPDATED Event Listeners ---
         downloadButton.addEventListener('click', downloadCard);
-
+        shareButton.addEventListener('click', toggleShareContainer);
+        copyHashtagsButton.addEventListener('click', copyHashtags);
+        
         goHomeButton.addEventListener('click', () => {
             currentQuestionIndex = 0;
             userAnswers = {};
             selectedOptionElement = null;
+            shareContainer.classList.add('hidden'); // Hide share container on reset
             showScreen(welcomeScreen);
         });
         
