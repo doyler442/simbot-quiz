@@ -174,7 +174,7 @@
             transition: all 0.5s ease-in-out;
         }
 
-        /* --- Card Design Styles --- */
+        /* --- Card Design Styles (Unchanged) --- */
         #printableArea {
             width: 100%;
             max-width: 450px;
@@ -190,25 +190,20 @@
             text-align: center;
             position: relative;
             z-index: 10;
-            overflow: hidden; /* Important for containing the background */
         }
-        
-        /* --- UPDATED: Replaced ::before with a real div for compatibility --- */
-        .card-background {
+        #printableArea::before {
+            content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background-image: linear-gradient(0deg, transparent 24%, rgba(100, 255, 218, 0.05) 25%, rgba(100, 255, 218, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 255, 218, 0.05) 75%, rgba(100, 255, 218, 0.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(100, 255, 218, 0.05) 25%, rgba(100, 255, 218, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 255, 218, 0.05) 75%, rgba(100, 255, 218, 0.05) 76%, transparent 77%, transparent);
             background-size: 50px 50px;
             animation: scanline 10s linear infinite;
             z-index: -1;
-            border-radius: 2rem;
         }
-
         @keyframes scanline {
             0% { background-position: 0 0; }
             100% { background-position: 0 500px; }
         }
-
         #printableArea .info101-brand {
             font-family: 'Press Start 2P', cursive;
             font-size: 1.8em;
@@ -443,8 +438,6 @@
         <div id="resultsScreen" class="screen results-section">
             <div class="w-full flex flex-col items-center">
                 <div id="printableArea"> <!-- Container for the digital card content -->
-                    <!-- UPDATED: Added a real div for the background -->
-                    <div class="card-background"></div>
                     <div class="card-header">
                         <h1 class="info101-brand">
                             BE THE ARCHITECT OF<br/>
@@ -834,10 +827,7 @@
         function downloadCard() {
             html2canvas(printableArea, {
                 useCORS: true,
-                scale: 2,
-                backgroundColor: '#0d1117',
-                windowWidth: printableArea.scrollWidth,
-                windowHeight: printableArea.scrollHeight
+                scale: 2
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.href = canvas.toDataURL('image/png');
