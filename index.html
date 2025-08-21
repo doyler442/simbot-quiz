@@ -430,7 +430,7 @@
         <!-- Processing Screen -->
         <div id="processingScreen" class="screen">
             <div class="loading-spinner"></div>
-            <p class="text-2xl font-semibold text-gray-200">Frankie the SIMbot is creating your personalised insights...</p>
+            <p class="text-2xl font-semibold text-gray-200">Frankie the SIMbot is crafting your personalised insights...</p>
             <p class="text-lg text-gray-400 mt-2">Analysing your digital DNA with ✨AI✨.</p>
         </div>
 
@@ -627,7 +627,8 @@
                 showScreen(questionScreen);
                 
                 setTimeout(() => {
-                    appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                    // This is a more direct and reliable way to scroll to the top on mobile.
+                    appContainer.scrollTop = 0;
                 }, 50);
             } else {
                 processAnswers();
@@ -665,7 +666,7 @@
             const imageApiUrl = `https://simbot-api-proxy-584934630915.australia-southeast2.run.app/generate-image`;
 
             // --- Step 1: Generate Text Snapshot and Tip ---
-            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is creating your personalised insights...";
+            document.querySelector('#processingScreen p:first-of-type').textContent = "Frankie the SIMbot is crafting your personalised insights...";
             document.querySelector('#processingScreen p:last-of-type').textContent = "Analysing your digital DNA with ✨AI✨.";
 
             // --- UPDATED PROMPT ---
