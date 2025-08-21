@@ -627,8 +627,10 @@
                 showScreen(questionScreen);
                 
                 setTimeout(() => {
-                    // This is a more direct and reliable way to scroll to the top on mobile.
-                    appContainer.scrollTop = 0;
+                    // This is a more robust way to force a scroll to the top on all browsers.
+                    document.body.scrollTop = 0; // For Safari
+                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                    appContainer.scrollTop = 0; // For our specific scrolling container
                 }, 50);
             } else {
                 processAnswers();
